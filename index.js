@@ -162,7 +162,7 @@ async function run() {
 run().catch(console.dir);
 //data testing if server is running
 app.get("/", (req, res) => {
-  res.send("Humanidad server is running.");
+  res.send("Humanidad server is running on heroku.");
 });
 //server is running and showing server console
 app.listen(port, () => {
