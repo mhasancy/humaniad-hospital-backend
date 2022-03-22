@@ -17,13 +17,15 @@ const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
+console.log(uri);
 //data async await function
 async function run() {
   try {
     await client.connect();
     const database = client.db("humanidadMaster");
+
     const servicesCollection = database.collection("services");
+
     const appointmentsCollection = database.collection("appointments");
     const blogsCollection = database.collection("blogs");
     const doctorsCollection = database.collection("doctors");
@@ -42,6 +44,12 @@ async function run() {
       const users = await cursor.toArray();
       res.send(users);
     });
+    //users data load
+    app.get("/doctors", async (req, res) => {
+      const cursor = doctorsCollection.find({});
+      const doctors = await cursor.toArray();
+      res.send(doctors);
+    });
     //reviews data load
     app.get("/reviews", async (req, res) => {
       const cursor = reviewsCollection.find({});
@@ -57,8 +65,8 @@ async function run() {
     //orders data load
     app.get("/appointments", async (req, res) => {
       const cursor = appointmentsCollection.find({});
-      const orders = await cursor.toArray();
-      res.send(orders);
+      const appointment = await cursor.toArray();
+      res.send(appointment);
     });
     //products data adding
     app.post("/services", async (req, res) => {
@@ -106,8 +114,8 @@ async function run() {
     });
     //orders data adding
     app.post("/appointments", async (req, res) => {
-      const order = req.body;
-      const result = await appointmentsCollection.insertOne(order);
+      const appointment = req.body;
+      const result = await appointmentsCollection.insertOne(appointment);
       res.json(result);
     });
     //products data adding
@@ -119,7 +127,26 @@ async function run() {
     //reviews data adding
     app.post("/reviews", async (req, res) => {
       const reviews = req.body;
+      console.log(req.body);
       const result = await reviewsCollection.insertOne(reviews);
+      res.json(result);
+    });
+
+    app.put("/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const requestedStatus = req.body;
+      const filter = { _id: ObjectId(id) };
+      const option = { upsert: true };
+      const statusChange = {
+        $set: {
+          status: requestedStatus.status,
+        },
+      };
+      const result = await reviewsCollection.updateOne(
+        filter,
+        statusChange,
+        option
+      );
       res.json(result);
     });
 
@@ -128,6 +155,13 @@ async function run() {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await appointmentsCollection.deleteOne(query);
+      res.json(result);
+    });
+
+    app.delete("/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await reviewsCollection.deleteOne(query);
       res.json(result);
     });
     //products data deleting
